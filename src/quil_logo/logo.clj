@@ -25,8 +25,8 @@
   (vreset! pen-size 1))
 
 (defn fd [l]
-  (vswap! x + (* 50 l (q/cos (q/radians (+ @dir dir-offset)))))
-  (vswap! y + (* 50 l (q/sin (q/radians (+ @dir dir-offset)))))
+  (vswap! x + (* 10 l (q/cos (q/radians (+ @dir dir-offset)))))
+  (vswap! y + (* 10 l (q/sin (q/radians (+ @dir dir-offset)))))
   (q/vertex @x @y))
 
 (defn bk [l]
@@ -84,13 +84,16 @@
         (let [[iterations v next-cmd & rest-cmds] cmds]
           (recur (conj split-cmds (conj 
                                    (chop-up-cmds v)
-                                   ['_ iterations]
+                                   ['i iterations]
                                    'dotimes))
                  (if next-cmd [next-cmd] [])
                  rest-cmds))
         (let [next-cmd (first cmds)]
           (if (or (fn? next-cmd)
-                  (symbol? next-cmd))
+                  (and (symbol? next-cmd)
+                       #_(#{'fd 'rt 'lt 'pd 'pu 'rpt 'pc 'bk} next-cmd)
+                       )
+                  )
             (recur (conj split-cmds cmd)
                    [next-cmd]
                    (rest cmds))

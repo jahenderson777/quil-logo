@@ -1,6 +1,6 @@
 (ns quil-logo.core
   (:require [quil.core :as q]
-            [quil-logo.logo :as logo :refer [rpt run reset t fd lt rt pd pu pc]]))
+            [quil-logo.logo :as logo :refer [rpt run reset t bk fd lt rt pd pu pc]]))
 
 (defn setup []
   (q/frame-rate 50)
@@ -24,17 +24,29 @@
        rpt 4 [fd 1 rt 10]
        pc 0))
 
+(defn flower [c size]
+  (run
+   rpt 14 [pd rt 11.4
+           rpt 5 [fd (* size 2) rt 4]
+           rpt 6 [fd (* size 1) rt 30]
+           rpt 5 [fd (* size 2) rt 4]
+           pc (* c)]))
+
 (defn draw []
   (reset)
-  (heart)
-  (starni)
+  ;(heart)
+  ;(starni)
+  (run 
+   lt (* 360 (q/sin (* 0.3 (t))))
+   rpt 6 [lt 60
+          fd 22
+          flower (* i 15) 0.7
+          bk 22])
   )
 
 (q/defsketch example
   :title "Logo"
-  ;:settings #(q/smooth 2)
   :setup setup
-  ;:renderer :p2d
   :draw draw
   :features [:resizable]
   :size [800 800])
