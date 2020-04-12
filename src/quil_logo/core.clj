@@ -44,8 +44,8 @@
   rt 30
   pd
   rpt 6 [fd 2 lt 120 fd 1.5 rt 160 fd 1.9 lt 60]
-  fd 1.9 lt 120 fd 2 rt 60
-  rpt 6 [fd 2 lt 120 fd 1.5 rt 160 fd 1.9 lt 60]
+  fd 1.9 lt 50
+  rpt 6 [lt 60 fd 1.9 rt 160 fd 1.5 lt 120 fd 2]
   pc 27
   ;(setps 0)
   
