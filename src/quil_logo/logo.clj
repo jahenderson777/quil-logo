@@ -153,3 +153,21 @@
   `(defn ~name ~args
      (do ~@(chop-up-cmds cmds args))))
 
+(defn hit-table [radius]
+  (let [r (range (* -1 radius)
+                 (inc radius))]
+    (->> (for [x r
+               y r
+               :let [l (q/sqrt (+ (q/sq y) (q/sq x)))]]
+           (when (<= l 5)
+             {:x x
+              :y y
+              :l l
+              :angle (if (zero? x)
+                       (if (zero? y)
+                         nil
+                         (if (pos? y)
+                           q/HALF-PI
+                           (* -1 q/HALF-PI)))
+                       (q/atan (/ y x)))}))
+         (remove nil?))))
