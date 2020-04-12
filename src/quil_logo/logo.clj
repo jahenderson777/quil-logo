@@ -6,6 +6,7 @@
 (def dir (volatile! 0))
 (def x (volatile! 600))
 (def y (volatile! 600))
+(def scale (volatile! 10))
 
 (def hue (volatile! 0))
 (def sat (volatile! 0))
@@ -20,6 +21,9 @@
 (defn setpc [c]
   (vreset! hue c))
 
+(defn setscale [s]
+  (vreset! scale s))
+
 (defn setps [s]
   (vreset! pen-size s))
 
@@ -32,6 +36,9 @@
 (defn setbri [b]
   (vreset! bri b))
 
+(defn setdir [d]
+  (vreset! dir d))
+
 (defn reset []
   (q/background 100)
   (q/color-mode :hsb 100)
@@ -40,6 +47,7 @@
   (vreset! shape-x @x)
   (vreset! shape-y @y)
   (vreset! dir 0)
+  (vreset! scale 10)
   (vreset! pen-size 1)
   (vreset! hue 0)
   (vreset! sat 70)
@@ -47,19 +55,19 @@
   (vreset! alpha 10))
 
 (defn fd [l]
-  (vswap! x + (* 10 l (q/cos (q/radians (+ @dir dir-offset)))))
-  (vswap! y + (* 10 l (q/sin (q/radians (+ @dir dir-offset)))))
+  (vswap! x + (* @scale l (q/cos (q/radians (+ @dir dir-offset)))))
+  (vswap! y + (* @scale l (q/sin (q/radians (+ @dir dir-offset)))))
   (q/vertex @x @y))
 
 (defn fc [l cdir cl cdir2 cl2]
-  (let [new-x (+ @x (* 10 l (q/cos (q/radians (+ @dir dir-offset)))))
-        new-y (+ @y (* 10 l (q/sin (q/radians (+ @dir dir-offset)))))
+  (let [new-x (+ @x (* @scale l (q/cos (q/radians (+ @dir dir-offset)))))
+        new-y (+ @y (* @scale l (q/sin (q/radians (+ @dir dir-offset)))))
         
-        cx (+ @x (* 10 cl (q/cos (q/radians (+ cdir dir-offset)))))
-        cy (+ @y (* 10 cl (q/sin (q/radians (+ cdir dir-offset)))))
+        cx (+ @x (* @scale cl (q/cos (q/radians (+ cdir dir-offset)))))
+        cy (+ @y (* @scale cl (q/sin (q/radians (+ cdir dir-offset)))))
         
-        cx2 (+ new-x (* 10 cl2 (q/cos (q/radians (+ cdir2 dir-offset)))))
-        cy2 (+ new-y (* 10 cl2 (q/sin (q/radians (+ cdir2 dir-offset)))))
+        cx2 (+ new-x (* @scale cl2 (q/cos (q/radians (+ cdir2 dir-offset)))))
+        cy2 (+ new-y (* @scale cl2 (q/sin (q/radians (+ cdir2 dir-offset)))))
         ]
     (q/bezier-vertex cx cy cx2 cy2 new-x new-y)
     (vreset! x new-x)
