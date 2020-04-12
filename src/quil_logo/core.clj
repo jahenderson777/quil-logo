@@ -89,6 +89,7 @@
   setps 0
   setalpha 40
   setbri 100
+  setscale 13
   spinning-flowers
   setscale 30
   
@@ -109,9 +110,11 @@
   ;(starni)
   #_(run))
 
+
 (q/defsketch logo
   :title "Logo"
   :setup #(q/frame-rate 50)  
   :draw draw
   :features [:resizable]
   :size [800 800])
+
