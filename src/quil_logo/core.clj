@@ -84,7 +84,7 @@
   leaf 20
   setscale 10)
 
-(defproc draw []
+(defproc draw2 []
   reset
   setps 0
   setalpha 40
@@ -110,6 +110,68 @@
   ;(starni)
   #_(run))
 
+
+(defproc slope []
+  lt -70 bk 8 pd fd 16 rt 120 fd 16 pc 40)
+
+(def state (atom {:bg nil
+                  :player-x 95
+                  :player-y 405
+                  :dir 0
+                  :hit-table (logo/hit-table 20)
+                  :speed 6}))
+
+(defn draw-player []
+  (let [{:keys [player-x player-y]} @state]
+    (q/ellipse player-x player-y 20 20)))
+
+(defn update-state []
+  (swap! state (fn [{:keys [speed dir] :as state}]
+                 (-> state
+                     (update :player-x + (* speed (q/cos dir)))
+                     (update :player-y + (* speed (q/sin dir)))))))
+
+(defn get-pixel [px x y]
+  (let [idx (+ (int x) (* (int y) 800))]
+    (aget px idx)))
+
+(defn draw []
+  (reset)
+  (slope)
+  
+  (update-state)
+  (let [{:keys [player-x player-y bg hit-table dir]} @state
+        px (q/pixels)]
+    (when-not bg 
+      (swap! state assoc :bg 
+             (get-pixel px player-x player-y))) 
+    (let [bg (:bg @state)
+          {:keys [sum-cx sum-cy cnt]} 
+          (reduce (fn [m {:keys [dx dy cx cy]}]
+                    (let [test-pixel (get-pixel px
+                                                (+ player-x dx)
+                                                (+ player-y dy))]
+                      (if (not= test-pixel bg)
+                        (do ;(println dx dy cx cy)
+                          (-> m
+                              (update :sum-cx + cx)
+                              (update :sum-cy + cy)
+                              (update :cnt inc)))
+                        m)))
+                  {:sum-cx 0
+                   :sum-cy 0
+                   :cnt 0}
+                  hit-table)
+          angle (q/atan2 sum-cy sum-cx)
+          new-dir (- (* 2 (+ angle q/HALF-PI)) 
+                     dir
+                     )]
+      (when (pos? cnt)
+        (println (q/degrees angle) (q/degrees new-dir))
+        (swap! state assoc :dir new-dir)
+        )
+      ))
+  (draw-player))
 
 (q/defsketch logo
   :title "Logo"

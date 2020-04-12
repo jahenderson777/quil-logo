@@ -40,8 +40,9 @@
   (vreset! dir d))
 
 (defn reset []
-  (q/background 100)
+  
   (q/color-mode :hsb 100)
+  (q/background 100)
   (vreset! x (/ (q/width) 2))
   (vreset! y (/ (q/height) 2))
   (vreset! shape-x @x)
@@ -156,18 +157,21 @@
 (defn hit-table [radius]
   (let [r (range (* -1 radius)
                  (inc radius))]
-    (->> (for [x r
-               y r
-               :let [l (q/sqrt (+ (q/sq y) (q/sq x)))]]
-           (when (<= l 5)
-             {:x x
-              :y y
-              :l l
-              :angle (if (zero? x)
-                       (if (zero? y)
-                         nil
-                         (if (pos? y)
-                           q/HALF-PI
-                           (* -1 q/HALF-PI)))
-                       (q/atan (/ y x)))}))
-         (remove nil?))))
+    (println r)
+    (for [x r
+          y r
+          :let [l (q/sqrt (+ (q/sq y) (q/sq x)))
+                angle (if (zero? x)
+                        (if (zero? y)
+                          nil
+                          (if (pos? y)
+                            q/HALF-PI
+                            (* -1 q/HALF-PI)))
+                        (q/atan2 y x))]
+          :when (and angle (<= l radius))]
+          {:dx x
+           :dy y
+           :l l
+           :angle angle
+           :cx (* 1 (q/cos angle))
+           :cy (* 1 (q/sin angle))})))
