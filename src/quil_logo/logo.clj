@@ -1,33 +1,69 @@
 (ns quil-logo.logo
-  (:require [quil.core :as q]))
+  (:require [quil.core :as q])
+  )
 
 (def dir-offset 270)
 (def dir (volatile! 0))
 (def x (volatile! 600))
 (def y (volatile! 600))
-(def col (volatile! 0))
+
+(def hue (volatile! 0))
+(def sat (volatile! 0))
+(def bri (volatile! 0))
+(def alpha (volatile! 0))
+
 (def pen-down (volatile! false))
 (def shape-x (volatile! 0))
 (def shape-y (volatile! 0))
 (def pen-size (volatile! 1))
 
 (defn setpc [c]
-  (vreset! col c))
+  (vreset! hue c))
+
+(defn setps [s]
+  (vreset! pen-size s))
+
+(defn setalpha [a]
+  (vreset! alpha a))
+
+(defn setsat [s]
+  (vreset! sat s))
+
+(defn setbri [b]
+  (vreset! bri b))
 
 (defn reset []
-  (q/background 88)
+  (q/background 100)
   (q/color-mode :hsb 100)
   (vreset! x (/ (q/width) 2))
   (vreset! y (/ (q/width) 2))
   (vreset! shape-x @x)
   (vreset! shape-y @y)
   (vreset! dir 0)
-  (vreset! pen-size 1))
+  (vreset! pen-size 1)
+  (vreset! hue 0)
+  (vreset! sat 70)
+  (vreset! bri 80)
+  (vreset! alpha 10))
 
 (defn fd [l]
   (vswap! x + (* 10 l (q/cos (q/radians (+ @dir dir-offset)))))
   (vswap! y + (* 10 l (q/sin (q/radians (+ @dir dir-offset)))))
   (q/vertex @x @y))
+
+(defn fc [l cdir cl cdir2 cl2]
+  (let [new-x (+ @x (* 10 l (q/cos (q/radians (+ @dir dir-offset)))))
+        new-y (+ @y (* 10 l (q/sin (q/radians (+ @dir dir-offset)))))
+        
+        cx (+ @x (* 10 cl (q/cos (q/radians (+ cdir dir-offset)))))
+        cy (+ @y (* 10 cl (q/sin (q/radians (+ cdir dir-offset)))))
+        
+        cx2 (+ new-x (* 10 cl2 (q/cos (q/radians (+ cdir2 dir-offset)))))
+        cy2 (+ new-y (* 10 cl2 (q/sin (q/radians (+ cdir2 dir-offset)))))
+        ]
+    (q/bezier-vertex cx cy cx2 cy2 new-x new-y)
+    (vreset! x new-x)
+    (vreset! y new-y)))
 
 (defn bk [l]
   (fd (* -1 l)))
@@ -52,16 +88,18 @@
               (not= @y @shape-y))
       (vreset! x @shape-x)
       (vreset! y @shape-y))
-    (q/fill c 100 80 10)
+    (q/fill c @sat @bri @alpha)
     (q/end-shape)
     (vreset! pen-down false)))
 
 (defn pd [& [pen-col]]
   (when-not @pen-down
     (q/begin-shape)
-    (q/stroke (if pen-col
-                pen-col 
-                @col) 100 80)
+    (if (pos? @pen-size)
+      (q/stroke (if pen-col
+                  pen-col 
+                  @hue) 100 80)
+      (q/no-stroke))
     (vreset! shape-x @x)
     (vreset! shape-y @y)
     (q/vertex @shape-x @shape-y)
@@ -70,7 +108,7 @@
 (defn t []
   (/ (q/millis) 1000.0))
 
-(defn chop-up-cmds [cmds]
+(defn chop-up-cmds [cmds local-vars]
   (loop [split-cmds []
          cmd [(first cmds)]
          cmds (rest cmds)]
@@ -83,7 +121,7 @@
       (if (= (first cmd) 'rpt)
         (let [[iterations v next-cmd & rest-cmds] cmds]
           (recur (conj split-cmds (conj 
-                                   (chop-up-cmds v)
+                                   (chop-up-cmds v local-vars)
                                    ['i iterations]
                                    'dotimes))
                  (if next-cmd [next-cmd] [])
@@ -91,9 +129,7 @@
         (let [next-cmd (first cmds)]
           (if (or (fn? next-cmd)
                   (and (symbol? next-cmd)
-                       #_(#{'fd 'rt 'lt 'pd 'pu 'rpt 'pc 'bk} next-cmd)
-                       )
-                  )
+                       (not (contains? (into #{} local-vars) next-cmd))))
             (recur (conj split-cmds cmd)
                    [next-cmd]
                    (rest cmds))
@@ -102,4 +138,10 @@
                    (rest cmds))))))))
 
 (defmacro run [& cmds]
-  `(do ~@(chop-up-cmds cmds)))
+  `(do ~@(chop-up-cmds cmds [])))
+
+
+(defmacro defproc [name args & cmds]
+  `(defn ~name ~args
+     (do ~@(chop-up-cmds cmds args))))
+

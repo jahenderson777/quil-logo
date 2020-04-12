@@ -1,0 +1,4 @@
+{:lint-as {quil-logo.logo/defproc clojure.core/defn}
+ :linters {:unresolved-symbol
+           {:exclude [(quil-logo.logo/run [i])
+                      (quil-logo.logo/defproc [i])]}}}
