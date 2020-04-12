@@ -43,7 +43,7 @@
   (q/background 100)
   (q/color-mode :hsb 100)
   (vreset! x (/ (q/width) 2))
-  (vreset! y (/ (q/width) 2))
+  (vreset! y (/ (q/height) 2))
   (vreset! shape-x @x)
   (vreset! shape-y @y)
   (vreset! dir 0)
