@@ -123,6 +123,7 @@
 
 (defn draw-player []
   (let [{:keys [player-x player-y]} @state]
+    (q/ellipse-mode :center)
     (q/ellipse player-x player-y 20 20)))
 
 (defn update-state []
@@ -138,7 +139,9 @@
 (defn draw []
   (reset)
   (slope)
-  
+  (q/rect-mode :center)
+  (q/rect 400 400 770 770)
+  ;(spinning-flowers)
   (update-state)
   (let [{:keys [player-x player-y bg hit-table dir]} @state
         px (q/pixels)]
@@ -166,12 +169,14 @@
           new-dir (- (* 2 (+ angle q/HALF-PI)) 
                      dir
                      )]
+      (draw-player)
       (when (pos? cnt)
         (println (q/degrees angle) (q/degrees new-dir))
         (swap! state assoc :dir new-dir)
+        (update-state)
         )
       ))
-  (draw-player))
+  )
 
 (q/defsketch logo
   :title "Logo"
